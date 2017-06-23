@@ -27,7 +27,8 @@ public class RollBall extends SurfaceView implements SurfaceHolder.Callback {
 
     int mCircleX1;       //圆X坐标
     int mCircleY1;       //圆Y坐标
-
+    int sp1 = 5;              //速度1
+    int sp2 = 8;              //速度2
 
     public RollBall(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -112,9 +113,11 @@ public class RollBall extends SurfaceView implements SurfaceHolder.Callback {
         float x = values[0];   //(-10 10)
         float y = values[1];     //(-10 10)
 
+        mCircleX = (int) (mCircleX - x * sp1);
+        mCircleY = (int) (mCircleY + y * sp1);
+        mCircleX1 = (int) (mCircleX1 - x * sp2);
+        mCircleY1 = (int) (mCircleY1 + y * sp2);
 
-        mCircleX = (int) (mCircleX - x * 5);
-        mCircleY = (int) (mCircleY + y * 5);
 
         if (mCircleX < circleR) {
             mCircleX = circleR + 1;
@@ -126,11 +129,6 @@ public class RollBall extends SurfaceView implements SurfaceHolder.Callback {
         } else if (mCircleY > mHeight - circleR) {
             mCircleY = mHeight - circleR - 1;
         }
-
-
-        mCircleX1 = (int) (mCircleX1 - x * 8);
-        mCircleY1 = (int) (mCircleY1 + y * 8);
-
         if (mCircleX1 < circleR) {
             mCircleX1 = circleR + 1;
         } else if (mCircleX1 > mWidth - circleR) {
@@ -143,35 +141,42 @@ public class RollBall extends SurfaceView implements SurfaceHolder.Callback {
         }
 
 
-        if (Math.sqrt((mCircleX - mCircleX1) * (mCircleX - mCircleX1) + (mCircleY - mCircleY1) * (mCircleY - mCircleY1)) == circleR * 2) {
-            if (mCircleX > mCircleX1 && x <= 0) {
-                mCircleX1 = (int) (mCircleX1 + x * 7);
-                mCircleY1 = (int) (mCircleY1 - y * 7);
-            } else if (mCircleX <= mCircleX1 && x <= 0) {
-                mCircleX = (int) (mCircleX + x * 5);
-                mCircleY = (int) (mCircleY - y * 5);
+      /*  需求: 实现多个小球的不重叠运动，
+           绘制实现：
+              四种情况：
+                向左运动：x>0
+                向右运动：x<0
+                向下运动：y>0
+                向上运动：y<0
+
+          控件动画实现
+            多个View 重力控制动画轨迹
+
+      */
+        double space = Math.sqrt((mCircleX - mCircleX1) * (mCircleX - mCircleX1) + (mCircleY - mCircleY1) * (mCircleY - mCircleY1));
+        if (2 <= space && space <= circleR * 2 + 1) {
+            if (mCircleX > mCircleX1 && x < 0) {           //右  x<0
+                mCircleX1 = (int) (mCircleX1 + x * sp2);
+            } else if (mCircleX <= mCircleX1 && x < 0) {   //右 x<0
+                mCircleX = (int) (mCircleX + x * sp1);
+
+            } else if (mCircleX > mCircleX1 && x > 0) {    //向左 x>0
+                mCircleX = (int) (mCircleX + x * sp1);
+            } else if (mCircleX < mCircleX1 && x > 0) {    //向左 x>0
+                mCircleX1 = (int) (mCircleX1 + x * sp2);
+            }
+
+            if (mCircleY > mCircleY1 && y < 0) {               //上 y<0
+                mCircleY = (int) (mCircleY - y * sp1);
+            } else if (mCircleY < mCircleY1 && y < 0) {       //上 y<0
+                mCircleY1 = (int) (mCircleY1 - y * sp2+0.5);
+            } else if (mCircleY > mCircleY1 && y > 0) {         //下 y>0
+                mCircleY1 = (int) (mCircleY1 - y * 8);
+            } else if (mCircleY <= mCircleY1 && y > 0) {        //下 y>0
+                mCircleY = (int) (mCircleY - y * 6);
             }
         }
 
-
-
-
-
-
-
-        /*int circleX = (int) (mCircleX - mCircleX * (x / 10));
-        int circleY = (int) (mCircleY + mCircleY * (y / 10));
-
-        if (circleX < circleR) {
-            circleX = circleR;
-        } else if (circleX > mWidth - circleR) {
-            circleX = mWidth - circleR;
-        }
-        if (circleY < circleR) {
-            circleY = circleR;
-        } else if (circleY > mHeight - circleR) {
-            circleY = mHeight - circleR;
-        }*/
 
 
         canvas.drawCircle(mCircleX, mCircleY, circleR, ciclePaint);
